@@ -165,7 +165,6 @@ app/
 - Reset password.
 - Role: owner, admin, kasir, teknisi.
 - Permission granular.
-- Pembatasan akses berdasarkan cabang/gudang jika multi-cabang diaktifkan.
 - Audit aktivitas kritis.
 
 ### 7.2 Master customer
@@ -652,6 +651,8 @@ make down
 - Test otomatis mencakup pembuatan order, pembayaran, perubahan status, stok, permission, dan WhatsApp job.
 
 ## 15. Tahapan Implementasi
+
+### Pastikan untuk read .agents/skills setiap eksekusi permintaan.
 
 ### Phase 0 — Discovery dan Project Foundation
 

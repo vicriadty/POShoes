@@ -1,0 +1,41 @@
+# Dependencies
+/vendor
+/node_modules
+
+# Build assets
+/public/build
+/public/hot
+/storage/*.key
+
+# Laravel runtime
+/storage/*.log
+/storage/logs/*.log
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/framework/cache/compiled
+
+# Environment
+/.env
+/.env.backup
+/.env.production
+/.phpunit.result.cache
+/.php-cs-fixer.cache
+
+# IDE / OS
+.phpactor.json
+.phpstorm.meta.php
+.idea/*
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Agent skills (user-specific)
+.claude/
+
+# Database dump
+*.sql
+
+# MinIO / object storage dev
+docker/minio-data/*
