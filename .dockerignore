@@ -1,0 +1,50 @@
+# Dependency & build cache
+vendor
+node_modules
+public/build
+public/hot
+storage/app/public
+
+# Repositori VCS
+.git
+.gitignore
+.gitattributes
+
+# Agent / tooling bekerja lokal, bukan bagian dari image aplikasi
+.agents
+.agents/*
+.claude
+.claude/*
+.idea
+.vscode
+.skills
+
+# Dokumentasi & CI (tidak dibutuhkan runtime)
+docs
+docs/*
+.github
+.github/*
+*.md
+
+# Env & secrets (JANGAN masuk ke image)
+.env
+.env.example
+.env.*
+.composer
+
+# Logs & cache runtime
+storage/*.log
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+
+# Tes & tooling lokal
+tests
+tests/*
+phpstan.neon
+phpunit.xml
+
+# Local temp
+*.log

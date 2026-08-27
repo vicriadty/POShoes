@@ -1,0 +1,147 @@
+name: poshoes
+
+# Environment bersama untuk service PHP (app/worker/scheduler).
+x-php-env: &php-env
+  APP_ENV: local
+  APP_DEBUG: "true"
+  DB_CONNECTION: mysql
+  DB_HOST: mysql
+  DB_PORT: 3306
+  DB_DATABASE: poshoes
+  DB_USERNAME: poshoes
+  DB_PASSWORD: secret
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  QUEUE_CONNECTION: redis
+  CACHE_STORE: redis
+  SESSION_DRIVER: redis
+
+# Build tunggal: satu image `poshoes-app` yang dipakai app/worker/scheduler.
+x-php-base: &php-base
+  image: poshoes-app
+  user: "1000:1000"
+  depends_on:
+    mysql:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  networks:
+    - appnet
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - .:/app:ro
+    depends_on:
+      - app
+    networks:
+      - appnet
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: dev
+    <<: *php-base
+    volumes:
+      - .:/app
+      - /app/vendor
+      - /app/node_modules
+    environment:
+      <<: *php-env
+      APP_URL: http://localhost:8080
+      FILESYSTEM_DISK: local
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      SENTRY_DSN: ""
+      COMMAND_FRESH: "1"
+
+  worker:
+    <<: *php-base
+    volumes:
+      - .:/app
+      - /app/vendor
+      - /app/node_modules
+    command: php artisan queue:work --sleep=1 --tries=3 --max-time=3600
+    environment:
+      <<: *php-env
+
+  scheduler:
+    <<: *php-base
+    volumes:
+      - .:/app
+      - /app/vendor
+      - /app/node_modules
+    command: php artisan schedule:work
+    environment:
+      <<: *php-env
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: poshoes
+      MYSQL_USER: poshoes
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - appnet
+
+  redis:
+    image: redis:7.4-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - appnet
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - appnet
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"
+    networks:
+      - appnet
+
+volumes:
+  mysql_data:
+  redis_data:
+  minio_data:
+
+networks:
+  appnet:
+    driver: bridge
