@@ -25,13 +25,11 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
-        volumes:
-          - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
         options: >-
           --health-cmd="mysqladmin ping -h localhost -uroot -proot"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=10
+          --health-retries=20
       redis:
         image: redis:7.4-alpine
         ports:
@@ -67,6 +65,15 @@ jobs:
           extensions: mbstring, bcmath, intl, pdo_mysql, pcntl, gd, zip, redis
           coverage: xdebug
           tools: composer:v2
+
+      - name: Create test database
+        run: |
+          php -r '
+            $pdo = new PDO("mysql:host=127.0.0.1;port=3306", "root", "root");
+            $pdo->exec("CREATE DATABASE IF NOT EXISTS poshoes_test");
+            $pdo->exec("GRANT ALL ON poshoes_test.* TO '\''poshoes'\''@'\''%'\''");
+            $pdo->exec("FLUSH PRIVILEGES");
+          '
 
       - name: Cache composer
         uses: actions/cache@v4
