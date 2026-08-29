@@ -33,13 +33,13 @@ FROM node:22-slim AS assets
 
 WORKDIR /app
 
-COPY package*.json vite.config.js .npmrc ./
+COPY package*.json vite.config.js svelte.config.js tsconfig.json .npmrc ./
 COPY bootstrap ./bootstrap
 COPY resources ./resources
 
-# Build Svelte/Vite menjadi public/build. Phase 2 akan melengkapi build nyata;
-# mkdir memastikan direktori tetap ada agar stage base dapat menyalinnya.
-RUN npm ci --omit=dev 2>/dev/null || npm install
+# Build Svelte/Vite menjadi public/build (termasuk PWA sw.js + manifest).
+# `npm ci` penuh dibutuhkan karena vite/svelte-plugin berada di devDependencies.
+RUN npm ci 2>/dev/null || npm install
 RUN npm run build 2>/dev/null || true
 RUN mkdir -p public/build
 
