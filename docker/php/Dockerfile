@@ -38,8 +38,8 @@ COPY bootstrap ./bootstrap
 COPY resources ./resources
 
 # Build Svelte/Vite menjadi public/build (termasuk PWA sw.js + manifest).
-# `|| true` menjaga build tetap lanjut bila ada isu non-blokir di CI.
-RUN npm ci --omit=dev 2>/dev/null || npm install
+# `npm ci` penuh dibutuhkan karena vite/svelte-plugin berada di devDependencies.
+RUN npm ci 2>/dev/null || npm install
 RUN npm run build 2>/dev/null || true
 RUN mkdir -p public/build
 
