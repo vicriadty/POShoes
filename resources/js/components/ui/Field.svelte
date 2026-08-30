@@ -5,7 +5,7 @@
     export let error: string | undefined = undefined;
     export let hint: string | undefined = undefined;
     export let value: string | number | null = '';
-    export let type: 'text' | 'password' | 'email' | 'tel' | 'number' = 'text';
+    export let type: 'text' | 'password' | 'email' | 'tel' | 'number' | 'date' = 'text';
     export let placeholder = '';
     export let inputmode: 'numeric' | 'tel' | 'email' | 'text' | undefined = undefined;
     export let required = false;
