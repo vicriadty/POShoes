@@ -36,11 +36,15 @@ final class ApiResponse
 
     /**
      * Response koleksi yang sudah dipaginate.
+     *
+     * @param  (callable(LengthAwarePaginator): array<int, mixed>)|null  $map
      */
-    public static function paginated(LengthAwarePaginator $paginator): JsonResponse
+    public static function paginated(LengthAwarePaginator $paginator, ?callable $map = null): JsonResponse
     {
+        $items = $map ? $map($paginator) : $paginator->items();
+
         return response()->json([
-            'data' => $paginator->items(),
+            'data' => $items,
             'meta' => [
                 'current_page' => $paginator->currentPage(),
                 'per_page' => $paginator->perPage(),

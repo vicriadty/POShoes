@@ -71,8 +71,9 @@ class RolePermissionSeeder extends Seeder
             'kasir' => [
                 'auth.login', 'auth.logout', 'users.view_own',
                 'customers.view', 'customers.create', 'customers.update',
+                'services.view',
                 'service_orders.view', 'service_orders.create', 'service_orders.update',
-                'service_orders.pickup',
+                'service_orders.change_status', 'service_orders.pickup',
                 'payments.create', 'payments.view',
                 'invoices.view', 'invoices.send',
             ],
