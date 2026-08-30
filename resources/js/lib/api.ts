@@ -31,6 +31,7 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
 }
 
 const BASE_URL = '/api/v1';
+const TOKEN_KEY = 'poshoes_token';
 
 let onUnauthorizedHandler: () => void = () => {};
 
@@ -38,15 +39,25 @@ export function setOnUnauthorized(handler: () => void): void {
     onUnauthorizedHandler = handler;
 }
 
+/**
+ * Token Bearer yang dipakai request. Jika tidak diberikan eksplisit, ambil dari
+ * localStorage (auth.ts menyimpannya di key `poshoes_token`).
+ */
+function resolveToken(token?: string | null): string | null {
+    if (token !== undefined) return token;
+    return localStorage.getItem(TOKEN_KEY);
+}
+
 async function request<T>(method: string, path: string, { body, token, ...rest }: RequestOptions = {}): Promise<T> {
     const headers = new Headers(rest.headers);
     headers.set('Accept', 'application/json');
 
+    const activeToken = resolveToken(token);
     if (body !== undefined) {
         headers.set('Content-Type', 'application/json');
     }
-    if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
+    if (activeToken) {
+        headers.set('Authorization', `Bearer ${activeToken}`);
     }
 
     const init: RequestInit = { ...rest, method, headers };

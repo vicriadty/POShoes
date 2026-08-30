@@ -8,6 +8,7 @@
     import OrderListPage from '@/components/pages/OrderListPage.svelte';
     import OrderCreatePage from '@/components/pages/OrderCreatePage.svelte';
     import OrderDetailPage from '@/components/pages/OrderDetailPage.svelte';
+    import CustomerPage from '@/components/pages/CustomerPage.svelte';
     import ProfilePage from '@/components/pages/ProfilePage.svelte';
     import AppShell from '@/components/layout/AppShell.svelte';
     import OfflineBanner from '@/components/layout/OfflineBanner.svelte';
@@ -15,6 +16,7 @@
     interface RouteResult {
         component: Component;
         id?: string;
+        isDraft?: boolean;
     }
 
     const authed = isAuthenticated;
@@ -42,9 +44,12 @@
             case 'orders': {
                 const [action] = rest;
                 if (action === 'new') return { component: OrderCreatePage };
+                if (action === 'draft') return { component: OrderDetailPage, id: rest[1], isDraft: true };
                 if (action) return { component: OrderDetailPage, id: action };
                 return { component: OrderListPage };
             }
+            case 'customers':
+                return { component: CustomerPage };
             case 'profile':
                 return { component: ProfilePage };
             default:
@@ -56,7 +61,7 @@
 <OfflineBanner />
 {#if $authed}
     <AppShell>
-        <svelte:component this={route.component} id={route.id} />
+        <svelte:component this={route.component} id={route.id} isDraft={route.isDraft} />
     </AppShell>
 {:else}
     <LoginPage />
