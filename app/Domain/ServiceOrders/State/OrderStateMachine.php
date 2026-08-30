@@ -8,8 +8,9 @@ use App\Domain\ServiceOrders\Enums\OrderStatus;
  * Matriks transisi status order (lihat docs/design/order-state-machine.md).
  *
  * Transisi yang tidak terdaftar dianggap invalid dan ditolak (409 DomainConflict).
- * Transisi non-empty di Phase 3: draft → received → inspection → approved/waiting_approval.
- * Aksi produksi (approved → in_progress → … → picked_up) dan pickup guard di Phase 5.
+ * Transisi Phase 3–4: draft → received → inspection → approved/waiting_approval,
+ * hingga ready_for_pickup → picked_up (guard lunas, ADR D4). Aksi produksi
+ * (approved → in_progress → … → ready_for_pickup) di Phase 5.
  */
 final class OrderStateMachine
 {

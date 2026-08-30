@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             BranchSeeder::class,
             DemoUserSeeder::class,
             ServiceCatalogSeeder::class,
+            PaymentMethodSeeder::class,
         ]);
     }
 }

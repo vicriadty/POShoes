@@ -84,4 +84,17 @@ class ServiceOrderController extends Controller
 
         return ApiResponse::ok(new ServiceOrderResource($updated));
     }
+
+    public function pickup(Request $request, ServiceOrder $order): JsonResponse
+    {
+        $updated = TransitionOrderStatus::transition(
+            $order,
+            OrderStatus::PickedUp,
+            changedBy: $request->user()->id,
+        );
+
+        $updated->load(['customer', 'items', 'shoes', 'statusHistories']);
+
+        return ApiResponse::ok(new ServiceOrderResource($updated));
+    }
 }

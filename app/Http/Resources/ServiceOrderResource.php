@@ -34,6 +34,8 @@ class ServiceOrderResource extends JsonResource
             'internal_notes' => $this->internal_notes,
             'items' => ServiceOrderItemResource::collection($this->whenLoaded('items')),
             'shoes' => ShoeItemResource::collection($this->whenLoaded('shoes')),
+            'payments' => PaymentResource::collection($this->whenLoaded('payments')),
+            'invoices' => InvoiceResource::collection($this->whenLoaded('invoices')),
             'status_histories' => ServiceOrderStatusHistoryResource::collection($this->whenLoaded('statusHistories')),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
