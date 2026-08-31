@@ -25,14 +25,7 @@ final class TransitionOrderStatus
         ?string $reason = null,
         ?int $changedBy = null,
     ): ServiceOrder {
-        $from = $order->status;
-
-        if (! OrderStateMachine::canTransition($from, $to)) {
-            throw new DomainConflictException(
-                "Transisi status tidak valid: {$from->value} → {$to->value}.",
-            );
-        }
-
+        // Validasi guard yang tidak bergantung status.
         if ($to === OrderStatus::Cancelled && $reason === null) {
             throw new DomainConflictException('Pembatalan wajib menyertakan alasan.');
         }
@@ -41,12 +34,28 @@ final class TransitionOrderStatus
             throw new DomainConflictException('Order wajib memiliki minimal satu item layanan.');
         }
 
-        return DB::transaction(function () use ($order, $from, $to, $reason, $changedBy) {
-            // Row lock order agar transisi serentak tidak ganda.
+        return DB::transaction(function () use ($order, $to, $reason, $changedBy) {
+            // Row lock order agar transisi serentak tidak ganda; baca ulang status
+            // dari DB (source of truth) — model yang dilewatkan bisa stale.
             $locked = ServiceOrder::query()
                 ->whereKey($order->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            $from = $locked->status;
+
+            if (! OrderStateMachine::canTransition($from, $to)) {
+                throw new DomainConflictException(
+                    "Transisi status tidak valid: {$from->value} → {$to->value}.",
+                );
+            }
+
+            // Guard pickup (ADR D4): order harus lunas sebelum diambil.
+            if ($to === OrderStatus::PickedUp && $locked->remaining_amount > 0) {
+                throw new DomainConflictException(
+                    'Order harus lunas sebelum diambil (sisa Rp '.number_format($locked->remaining_amount, 0, ',', '.').').',
+                );
+            }
 
             $locked->status = $to;
             if ($to === OrderStatus::Received) {
