@@ -4,6 +4,7 @@ use App\Domain\Payments\Actions\RecordPayment;
 use App\Domain\ServiceOrders\Actions\CreateServiceOrder;
 use App\Domain\ServiceOrders\Actions\TransitionOrderStatus;
 use App\Domain\ServiceOrders\Enums\OrderStatus;
+use App\Exceptions\DomainConflictException;
 use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\PaymentMethod;
@@ -184,4 +185,52 @@ it('generates unique payment numbers', function () {
 
     expect($p1->payment_number)->not->toBe($p2->payment_number);
     expect($p1->payment_number)->toMatch('/^PAY-\d{8}-\d{4}$/');
+});
+
+it('prevents double payment under concurrent full payments (row-lock)', function () {
+    $kasir = payUser($this->branch, 'kasir');
+    $order = makePaidOrder($this, $kasir, 100000);
+
+    // Dua snapshot stale — seolah dua kasir membaca "sisa 100.000" sebelum
+    // satupun commit. Keduanya mengirim pembayaran penuh.
+    $stale1 = ServiceOrder::find($order->id);
+    $stale2 = ServiceOrder::find($order->id);
+
+    // Pembayaran pertama (100.000) berhasil.
+    $p1 = RecordPayment::record($stale1, $this->method, 100000, $kasir->id);
+
+    // Pembayaran kedua memakai snapshot lama (remaining masih 100.000 di memori),
+    // tapi RecordPayment me-re-read dengan row-lock → sisa kini 0 → harus 409.
+    expect(fn () => RecordPayment::record($stale2, $this->method, 100000, $kasir->id))
+        ->toThrow(DomainConflictException::class);
+
+    // Invariant: paid_amount tidak pernah melebihi total_amount.
+    $order->refresh();
+    expect($order->paid_amount)->toBe(100000);
+    expect($order->paid_amount)->toBeLessThanOrEqual($order->total_amount);
+    expect($order->remaining_amount)->toBe(0);
+
+    $this->assertDatabaseCount('payments', 1);
+});
+
+it('prevents double payment of half each from stale snapshots', function () {
+    $kasir = payUser($this->branch, 'kasir');
+    $order = makePaidOrder($this, $kasir, 100000);
+
+    $stale1 = ServiceOrder::find($order->id);
+    $stale2 = ServiceOrder::find($order->id);
+
+    // Kasir 1 dan kasir 2 masing-masing mengirim 70.000 (lebih dari setengah)
+    // berdasarkan snapshot yang sama-sama menunjukkan sisa 100.000.
+    RecordPayment::record($stale1, $this->method, 70000, $kasir->id);
+
+    // Snapshot kedua masih bilang sisa 100.000, tapi sebenarnya tersisa 30.000.
+    expect(fn () => RecordPayment::record($stale2, $this->method, 70000, $kasir->id))
+        ->toThrow(DomainConflictException::class);
+
+    $order->refresh();
+    expect($order->paid_amount)->toBe(70000);
+    expect($order->remaining_amount)->toBe(30000);
+
+    $this->assertDatabaseCount('payments', 1);
 });
