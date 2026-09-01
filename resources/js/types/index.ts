@@ -125,6 +125,8 @@ export interface ServiceOrder {
     customer?: Customer | null;
     items?: ServiceOrderItem[];
     shoes?: ShoeItem[];
+    payments?: Payment[];
+    invoices?: Invoice[];
     status_histories?: ServiceOrderStatusHistory[];
     created_at: string | null;
     updated_at: string | null;
@@ -151,6 +153,61 @@ export interface Paginated<T> {
         total: number;
         last_page: number;
     };
+}
+
+// ===== Payment =====
+
+export interface PaymentMethod {
+    id: number;
+    code: string;
+    name: string;
+    type: string;
+    active: boolean;
+}
+
+export interface Payment {
+    id: number;
+    service_order_id: number;
+    payment_number: string;
+    payment_method_id: number;
+    method?: PaymentMethod | null;
+    amount: number;
+    received_at: string;
+    received_by: number;
+    reference: string | null;
+    voided_by: number | null;
+    voided_at: string | null;
+    void_reason: string | null;
+    refunded_from: number | null;
+    is_voided: boolean;
+    created_at: string | null;
+}
+
+export interface Invoice {
+    id: number;
+    invoice_number: string;
+    service_order_id: number;
+    status: string;
+    issued_at: string | null;
+    due_at: string | null;
+    sent_at: string | null;
+    created_at: string | null;
+}
+
+// ===== Cashier shift =====
+
+export interface CashierShift {
+    id: number;
+    user_id: number;
+    branch_id: number;
+    opening_balance: number;
+    closed_balance: number | null;
+    expected_amount: number | null;
+    discrepancy: number | null;
+    opened_at: string;
+    closed_at: string | null;
+    notes: string | null;
+    is_open: boolean;
 }
 
 // ===== Payload pembuatan order =====

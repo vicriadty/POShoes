@@ -6,6 +6,7 @@
         { to: '/', label: 'Dashboard', icon: '🏠' },
         { to: '/orders', label: 'Order', icon: '📋' },
         { to: '/customers', label: 'Customer', icon: '👥' },
+        { to: '/shift', label: 'Shift', icon: '🕒' },
         { to: '/profile', label: 'Akun', icon: '👤' },
     ];
 

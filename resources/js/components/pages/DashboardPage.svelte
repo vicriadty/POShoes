@@ -35,6 +35,11 @@
             <h4 class="mt-2 font-semibold text-slate-900">Customer</h4>
             <p class="text-xs text-slate-500">Kelola pelanggan</p>
         </Link>
+        <Link to="/shift" class="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-brand-300">
+            <span class="text-xl">🕒</span>
+            <h4 class="mt-2 font-semibold text-slate-900">Shift</h4>
+            <p class="text-xs text-slate-500">Buka / tutup shift</p>
+        </Link>
         <Link to="/profile" class="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-brand-300">
             <span class="text-xl">👤</span>
             <h4 class="mt-2 font-semibold text-slate-900">Profil</h4>

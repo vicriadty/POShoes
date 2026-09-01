@@ -70,6 +70,7 @@ COPY --from=vendor /app /app
 COPY --from=assets /app/public/build /app/public/build
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-app.ini
 COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Folder yang ditulis runtime
 RUN mkdir -p /app/storage/framework/{cache,sessions,views} \

@@ -8,6 +8,10 @@ import type {
     CreateOrderPayload,
     Customer,
     Paginated,
+    CashierShift,
+    Invoice,
+    Payment,
+    PaymentMethod,
     ServiceCatalog,
     ServiceCategory,
     ServiceOrder,
@@ -62,4 +66,58 @@ export function createOrder(payload: CreateOrderPayload): Promise<{ data: Servic
 
 export function changeOrderStatus(id: number, status: string, reason?: string): Promise<{ data: ServiceOrder }> {
     return api.post<{ data: ServiceOrder }>(`/service-orders/${id}/status`, { status, reason });
+}
+
+export function pickupOrder(id: number): Promise<{ data: ServiceOrder }> {
+    return api.post<{ data: ServiceOrder }>(`/service-orders/${id}/pickup`);
+}
+
+// ===== Payment =====
+
+export async function fetchPaymentMethods(params: { active_only?: boolean } = {}): Promise<{ data: PaymentMethod[] }> {
+    return api.get<{ data: PaymentMethod[] }>(`/payment-methods${params.active_only ? '?active_only=1' : ''}`);
+}
+
+export async function fetchPayments(orderId: number): Promise<{ data: Payment[] }> {
+    return api.get<{ data: Payment[] }>(`/service-orders/${orderId}/payments`);
+}
+
+export function createPayment(orderId: number, payload: { payment_method_id: number; amount: number; reference?: string }): Promise<{ data: Payment }> {
+    return api.post<{ data: Payment }>(`/service-orders/${orderId}/payments`, payload);
+}
+
+export function voidPayment(orderId: number, paymentId: number, reason?: string): Promise<{ data: Payment }> {
+    return api.post<{ data: Payment }>(`/service-orders/${orderId}/payments/${paymentId}/void`, { reason });
+}
+
+export function refundPayment(orderId: number, paymentId: number, payload: { payment_method_id: number; amount: number; reference?: string }): Promise<{ data: Payment }> {
+    return api.post<{ data: Payment }>(`/service-orders/${orderId}/payments/${paymentId}/refund`, payload);
+}
+
+// ===== Invoice =====
+
+export async function fetchInvoice(orderId: number): Promise<{ data: Invoice }> {
+    return api.get<{ data: Invoice }>(`/service-orders/${orderId}/invoice`);
+}
+
+export async function sendInvoice(orderId: number): Promise<{ data: Invoice }> {
+    return api.post<{ data: Invoice }>(`/service-orders/${orderId}/invoice/send`);
+}
+
+export function invoicePdfUrl(orderId: number): string {
+    return `/api/v1/service-orders/${orderId}/invoice/pdf`;
+}
+
+// ===== Cashier shift =====
+
+export async function fetchCurrentShift(): Promise<{ data: CashierShift | null }> {
+    return api.get<{ data: CashierShift | null }>('/cashier-shifts/current');
+}
+
+export function openShift(payload: { opening_balance: number; notes?: string }): Promise<{ data: CashierShift }> {
+    return api.post<{ data: CashierShift }>('/cashier-shifts', payload);
+}
+
+export function closeShift(shiftId: number, payload: { closed_balance: number; notes?: string }): Promise<{ data: CashierShift }> {
+    return api.post<{ data: CashierShift }>(`/cashier-shifts/${shiftId}/close`, payload);
 }
