@@ -3,7 +3,7 @@
  * Memakai `api` client dari ./api (Bearer token, envelope, 401 handler).
  */
 
-import { api } from './api';
+import { api, ApiError } from './api';
 import type {
     CreateOrderPayload,
     Customer,
@@ -104,8 +104,24 @@ export async function sendInvoice(orderId: number): Promise<{ data: Invoice }> {
     return api.post<{ data: Invoice }>(`/service-orders/${orderId}/invoice/send`);
 }
 
-export function invoicePdfUrl(orderId: number): string {
-    return `/api/v1/service-orders/${orderId}/invoice/pdf`;
+/**
+ * Unduh invoice PDF dengan header Authorization Bearer (tidak bisa via
+ * window.open — tab baru tidak membawa token, memicu 401/redirect login).
+ * Mengembalikan URL objek blob untuk dibuka/diunduh.
+ */
+export async function downloadInvoicePdf(orderId: number): Promise<string> {
+    const token = localStorage.getItem('poshoes_token');
+    const response = await fetch(`/api/v1/service-orders/${orderId}/invoice/pdf`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+
+    if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new ApiError(response.status, body?.message ?? 'Gagal mengunduh invoice.', body?.errors);
+    }
+
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
 }
 
 // ===== Cashier shift =====

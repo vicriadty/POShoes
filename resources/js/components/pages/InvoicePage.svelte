@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { fetchOrder, fetchInvoice, sendInvoice, invoicePdfUrl } from '@/lib/domain';
+    import { fetchOrder, fetchInvoice, sendInvoice, downloadInvoicePdf } from '@/lib/domain';
     import { toast } from '@/lib/toast';
     import { ApiError } from '@/lib/api';
     import Button from '@/components/ui/Button.svelte';
@@ -64,7 +64,12 @@
     }
 
     function openPdf(): void {
-        window.open(invoicePdfUrl(Number(id)), '_blank');
+        downloadInvoicePdf(Number(id))
+            .then((url) => window.open(url, '_blank'))
+            .catch((e) => {
+                if (e instanceof ApiError) toast.error(e.message);
+                else toast.error('Gagal mengunduh PDF.');
+            });
     }
 </script>
 
