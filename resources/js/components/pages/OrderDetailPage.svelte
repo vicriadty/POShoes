@@ -167,6 +167,20 @@
                 </Card>
             {/if}
 
+            {#if serverOrder.remaining_amount > 0 && serverOrder.status !== 'cancelled' && serverOrder.status !== 'picked_up'}
+                <Link
+                    to={`/orders/${serverOrder.id}/payments`}
+                    class="block rounded-2xl bg-brand-600 px-4 py-3 text-center font-medium text-white hover:bg-brand-700"
+                >Terima Pembayaran</Link>
+            {/if}
+
+            {#if serverOrder.status !== 'cancelled' && serverOrder.status !== 'picked_up'}
+                <Link
+                    to={`/orders/${serverOrder.id}/invoice`}
+                    class="block rounded-2xl border border-slate-300 px-4 py-3 text-center font-medium text-slate-700 hover:bg-slate-50"
+                >Lihat Invoice</Link>
+            {/if}
+
             {#if (serverOrder.status_histories ?? []).length > 0}
                 <Card title="Riwayat Status">
                     <ol class="space-y-2">

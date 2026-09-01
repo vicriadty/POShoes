@@ -8,6 +8,9 @@
     import OrderListPage from '@/components/pages/OrderListPage.svelte';
     import OrderCreatePage from '@/components/pages/OrderCreatePage.svelte';
     import OrderDetailPage from '@/components/pages/OrderDetailPage.svelte';
+    import PaymentPage from '@/components/pages/PaymentPage.svelte';
+    import InvoicePage from '@/components/pages/InvoicePage.svelte';
+    import CashierShiftPage from '@/components/pages/CashierShiftPage.svelte';
     import CustomerPage from '@/components/pages/CustomerPage.svelte';
     import ProfilePage from '@/components/pages/ProfilePage.svelte';
     import AppShell from '@/components/layout/AppShell.svelte';
@@ -42,14 +45,18 @@
             case 'login':
                 return { component: LoginPage };
             case 'orders': {
-                const [action] = rest;
+                const [action, sub] = rest;
                 if (action === 'new') return { component: OrderCreatePage };
-                if (action === 'draft') return { component: OrderDetailPage, id: rest[1], isDraft: true };
+                if (action === 'draft') return { component: OrderDetailPage, id: sub, isDraft: true };
+                if (action && sub === 'payments') return { component: PaymentPage, id: action };
+                if (action && sub === 'invoice') return { component: InvoicePage, id: action };
                 if (action) return { component: OrderDetailPage, id: action };
                 return { component: OrderListPage };
             }
             case 'customers':
                 return { component: CustomerPage };
+            case 'shift':
+                return { component: CashierShiftPage };
             case 'profile':
                 return { component: ProfilePage };
             default:
