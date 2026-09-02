@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\ServiceOrders\PaymentController;
 use App\Http\Controllers\Api\V1\ServiceOrders\ServiceOrderController;
 use App\Http\Controllers\Api\V1\Services\PaymentMethodController;
 use App\Http\Controllers\Api\V1\Services\ServiceCatalogController;
+use App\Http\Controllers\Api\V1\TechnicianWork\TechnicianWorkController;
 use App\Http\Controllers\Api\V1\Users\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -89,6 +90,16 @@ Route::middleware('auth:sanctum')->group(function (): void {
         ->middleware('permission:payments.view');
 
     // Cashier shift (kasir/admin/owner).
+
+    // Technician work queue & item workflow (Phase 5).
+    Route::get('work/queue', [TechnicianWorkController::class, 'queue'])
+        ->middleware('permission:work.view');
+    Route::post('work/items/{item}/assign', [TechnicianWorkController::class, 'assign'])
+        ->middleware('permission:service_orders.assign');
+    Route::post('work/items/{item}/status', [TechnicianWorkController::class, 'changeStatus'])
+        ->middleware('permission:work.item_status');
+    Route::post('work/items/{item}/notes', [TechnicianWorkController::class, 'addNote'])
+        ->middleware('permission:work.notes');
     Route::get('cashier-shifts/current', [CashierShiftController::class, 'current'])
         ->middleware('permission:payments.view');
     Route::post('cashier-shifts', [CashierShiftController::class, 'store'])

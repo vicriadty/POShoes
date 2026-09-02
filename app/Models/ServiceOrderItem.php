@@ -41,6 +41,9 @@ class ServiceOrderItem extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<ServiceOrder, $this>
+     */
     public function serviceOrder(): BelongsTo
     {
         return $this->belongsTo(ServiceOrder::class);
