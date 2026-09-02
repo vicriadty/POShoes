@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Exceptions\UnauthorizedException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Throwable;
@@ -34,6 +35,10 @@ final class ApiExceptionHandler
             ),
             $e instanceof AuthorizationException, $e instanceof UnauthorizedException => $this->error(
                 'Forbidden.', 403, $this->e($e),
+            ),
+            $e instanceof AccessDeniedHttpException => $this->error(
+                $e->getMessage() !== 'This action is unauthorized.' ? $e->getMessage() : 'Forbidden.',
+                403, $this->e($e),
             ),
             $e instanceof ValidationException => $this->validation($e),
             $e instanceof ModelNotFoundException, $e instanceof NotFoundHttpException => $this->error(
