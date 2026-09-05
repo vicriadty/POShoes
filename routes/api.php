@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Customers\CustomerController;
 use App\Http\Controllers\Api\V1\ServiceOrders\InvoiceController;
 use App\Http\Controllers\Api\V1\ServiceOrders\PaymentController;
 use App\Http\Controllers\Api\V1\ServiceOrders\ServiceOrderController;
+use App\Http\Controllers\Api\V1\ServiceOrders\ShoePhotoController;
 use App\Http\Controllers\Api\V1\Services\PaymentMethodController;
 use App\Http\Controllers\Api\V1\Services\ServiceCatalogController;
 use App\Http\Controllers\Api\V1\TechnicianWork\TechnicianWorkController;
@@ -84,6 +85,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
         ->middleware('permission:invoices.view');
     Route::post('service-orders/{order}/invoice/send', [InvoiceController::class, 'markSent'])
         ->middleware('permission:invoices.send');
+
+    // Shoe photos (work.photos / service_orders.view).
+    Route::get('service-orders/{order}/photos', [ShoePhotoController::class, 'index'])
+        ->middleware('permission:service_orders.view');
+    Route::post('service-orders/{order}/shoes/{shoe}/photos', [ShoePhotoController::class, 'store'])
+        ->middleware('permission:work.photos');
+    Route::get('shoe-photos/{photo}/file', [ShoePhotoController::class, 'file'])
+        ->middleware('permission:service_orders.view');
 
     // Payment methods (kasir perlu daftar saat menerima pembayaran).
     Route::get('payment-methods', [PaymentMethodController::class, 'index'])
