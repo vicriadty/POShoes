@@ -19,6 +19,7 @@ class ServiceOrderItemResource extends JsonResource
             'service_name' => $this->service_name,
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
+            'proposed_price' => $this->proposed_price,
             'discount_amount' => $this->discount_amount,
             'subtotal' => $this->subtotal,
             'estimated_duration_minutes' => $this->estimated_duration_minutes,

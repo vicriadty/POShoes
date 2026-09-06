@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers\Api\V1\ServiceOrders;
 
+use App\Domain\ServiceOrders\Actions\ApprovePriceChange;
 use App\Domain\ServiceOrders\Actions\CreateServiceOrder;
+use App\Domain\ServiceOrders\Actions\RequestPriceChange;
 use App\Domain\ServiceOrders\Actions\TransitionOrderStatus;
 use App\Domain\ServiceOrders\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ServiceOrders\ApprovePriceChangeRequest;
 use App\Http\Requests\ServiceOrders\ChangeOrderStatusRequest;
+use App\Http\Requests\ServiceOrders\RequestPriceChangeRequest;
 use App\Http\Requests\ServiceOrders\StoreServiceOrderRequest;
 use App\Http\Resources\ServiceOrderResource;
 use App\Models\Customer;
 use App\Models\ServiceOrder;
+use App\Models\ServiceOrderItem;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -96,5 +101,41 @@ class ServiceOrderController extends Controller
         $updated->load(['customer', 'items', 'shoes', 'statusHistories']);
 
         return ApiResponse::ok(new ServiceOrderResource($updated));
+    }
+
+    public function requestPriceChange(RequestPriceChangeRequest $request, ServiceOrder $order, ServiceOrderItem $item): JsonResponse
+    {
+        if ((int) $item->service_order_id !== (int) $order->id) {
+            abort(404);
+        }
+
+        $updated = RequestPriceChange::request(
+            $item,
+            (int) $request->input('unit_price'),
+            reason: $request->input('reason'),
+            changedBy: $request->user()->id,
+        );
+
+        $updated->load('serviceOrder');
+
+        return ApiResponse::ok(new ServiceOrderResource($updated->serviceOrder->load(['customer', 'items', 'shoes', 'statusHistories'])));
+    }
+
+    public function approvePriceChange(ApprovePriceChangeRequest $request, ServiceOrder $order, ServiceOrderItem $item): JsonResponse
+    {
+        if ((int) $item->service_order_id !== (int) $order->id) {
+            abort(404);
+        }
+
+        ApprovePriceChange::approve(
+            $item,
+            (int) $request->input('approved_price'),
+            reason: $request->input('reason'),
+            approvedBy: $request->user()->id,
+        );
+
+        $order->refresh()->load(['customer', 'items', 'shoes', 'statusHistories']);
+
+        return ApiResponse::ok(new ServiceOrderResource($order));
     }
 }
