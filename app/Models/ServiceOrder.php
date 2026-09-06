@@ -65,6 +65,9 @@ class ServiceOrder extends Model
         return $this->belongsTo(User::class, 'received_by');
     }
 
+    /**
+     * @return HasMany<ServiceOrderItem, $this>
+     */
     public function items(): HasMany
     {
         return $this->hasMany(ServiceOrderItem::class);

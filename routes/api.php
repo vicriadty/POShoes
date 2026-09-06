@@ -68,6 +68,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('service-orders/{order}/pickup', [ServiceOrderController::class, 'pickup'])
         ->middleware('permission:service_orders.pickup');
 
+    // Price change request & approval (ADR D2 / business-rules).
+    Route::post('service-orders/{order}/items/{item}/price-change', [ServiceOrderController::class, 'requestPriceChange'])
+        ->middleware('permission:service_orders.update');
+    Route::post('service-orders/{order}/items/{item}/price-approve', [ServiceOrderController::class, 'approvePriceChange'])
+        ->middleware('permission:service_orders.approve');
+
     // Payment (kasir/admin/owner; void/refund admin+owner).
     Route::get('service-orders/{order}/payments', [PaymentController::class, 'index'])
         ->middleware('permission:payments.view');
