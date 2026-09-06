@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             DemoUserSeeder::class,
             ServiceCatalogSeeder::class,
             PaymentMethodSeeder::class,
+            InventorySeeder::class,
         ]);
     }
 }

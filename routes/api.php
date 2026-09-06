@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\CashierShifts\CashierShiftController;
 use App\Http\Controllers\Api\V1\Customers\CustomerController;
+use App\Http\Controllers\Api\V1\Inventory\InventoryController;
 use App\Http\Controllers\Api\V1\ServiceOrders\InvoiceController;
 use App\Http\Controllers\Api\V1\ServiceOrders\PaymentController;
 use App\Http\Controllers\Api\V1\ServiceOrders\ServiceOrderController;
@@ -105,6 +106,20 @@ Route::middleware('auth:sanctum')->group(function (): void {
         ->middleware('permission:payments.view');
 
     // Cashier shift (kasir/admin/owner).
+
+    // Inventory bahan (Phase 6).
+    Route::get('inventory/items', [InventoryController::class, 'items'])
+        ->middleware('permission:inventory.items.view');
+    Route::post('inventory/items', [InventoryController::class, 'storeItem'])
+        ->middleware('permission:inventory.adjust');
+    Route::get('inventory/items/{item}/movements', [InventoryController::class, 'movements'])
+        ->middleware('permission:inventory.items.view');
+    Route::post('inventory/adjustments', [InventoryController::class, 'applyAdjustment'])
+        ->middleware('permission:inventory.adjust');
+    Route::post('inventory/opname', [InventoryController::class, 'opname'])
+        ->middleware('permission:inventory.stocktake');
+    Route::post('service-orders/{order}/inventory/usages', [InventoryController::class, 'recordUsage'])
+        ->middleware('permission:inventory.usage');
 
     // Technician work queue & item workflow (Phase 5).
     Route::get('work/queue', [TechnicianWorkController::class, 'queue'])
