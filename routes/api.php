@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\CashierShifts\CashierShiftController;
 use App\Http\Controllers\Api\V1\Customers\CustomerController;
 use App\Http\Controllers\Api\V1\Inventory\InventoryController;
+use App\Http\Controllers\Api\V1\Messaging\SendMessageController;
+use App\Http\Controllers\Api\V1\Messaging\WhatsAppWebhookController;
 use App\Http\Controllers\Api\V1\ServiceOrders\InvoiceController;
 use App\Http\Controllers\Api\V1\ServiceOrders\PaymentController;
 use App\Http\Controllers\Api\V1\ServiceOrders\ServiceOrderController;
@@ -136,4 +138,16 @@ Route::middleware('auth:sanctum')->group(function (): void {
         ->middleware('permission:payments.create');
     Route::post('cashier-shifts/{shift}/close', [CashierShiftController::class, 'close'])
         ->middleware('permission:payments.create');
+
+    // WhatsApp messaging (Phase 7).
+    Route::post('service-orders/{order}/messages/invoice', [SendMessageController::class, 'sendInvoice'])
+        ->middleware('permission:invoices.send');
+    Route::post('whatsapp/messages/{message}/resend', [SendMessageController::class, 'resend'])
+        ->middleware('permission:whatsapp.resend');
+});
+
+// Webhook WhatsApp (publik; verifikasi token, idempotent).
+Route::prefix('webhooks/whatsapp')->group(function (): void {
+    Route::get('/', [WhatsAppWebhookController::class, 'verify']);
+    Route::post('/status', [WhatsAppWebhookController::class, 'status']);
 });
